@@ -3,11 +3,20 @@ import 'enums.dart';
 import 'exceptions.dart';
 import 'package:http/http.dart' as http;
 
+Store _globalStore;
+
+Future<Store> globalStore() async {
+  return _globalStore ?? await Store.forRegion(Region.na);
+}
+
 /// Static asset storage
 class Store {
   final UrlGenerator url;
 
-  Store([UrlGenerator generator]) : url = generator ?? UrlGenerator();
+  Store([UrlGenerator generator]) : url = generator ?? UrlGenerator() {
+    // Cache the the last store
+    _globalStore = this;
+  }
 
   /// The active language
   Language get language => url.language;

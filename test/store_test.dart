@@ -36,11 +36,11 @@ void main() {
 
     test('Network exception', () async {
       var resource = Resource(store.url.document('test'), () => {});
+      var matchMessage =
+          (NetworkException e) => e.message.contains('`403 Forbidden`');
+
       expect(() async => await store.fetch(resource),
-          throwsA(allOf(isA<NetworkException>(), predicate((e) {
-            print(e.message);
-            return true;
-          }))));
+          throwsA(allOf(isA<NetworkException>(), predicate(matchMessage))));
     });
   });
 

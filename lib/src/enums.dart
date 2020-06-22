@@ -1,5 +1,6 @@
 import 'dart:mirrors';
 import 'package:champions/src/exceptions.dart';
+import 'package:strings/strings.dart';
 
 abstract class _Enum {
   final String code;
@@ -12,7 +13,7 @@ abstract class _Enum {
 }
 
 /// Generates enum from string
-T _enumFromString<T extends _Enum>(String code){
+T _enumFromString<T extends _Enum>(String code) {
   var name = Symbol(code);
   var instance = reflectClass(T);
   var member = instance.staticMembers[name];
@@ -21,7 +22,21 @@ T _enumFromString<T extends _Enum>(String code){
     return instance.getField(name).reflectee;
   }
 
-  throw EnumException<T>('The ${instance.reflectedType} code $code is not supported.');
+  throw EnumException<T>(
+      'The ${instance.reflectedType} code $code is not supported.');
+}
+
+class Role extends _Enum {
+  const Role(String code) : super(code, code);
+
+  static const Role assassin = Role('Assassin');
+  static const Role fighter = Role('Fighter');
+  static const Role mage = Role('Mage');
+  static const Role marksman = Role('Marksman');
+  static const Role support = Role('Support');
+  static const Role tank = Role('Tank');
+
+  static Role fromString(String code) => _enumFromString<Role>(code.toLowerCase());
 }
 
 /// The content language

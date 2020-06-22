@@ -6,6 +6,9 @@ abstract class _ChampionException implements Exception {
   final String message;
 
   _ChampionException(this.message);
+
+  @override
+  String toString() => message;
 }
 
 /// Exception for when a network error occurs

@@ -1,12 +1,39 @@
-import 'dart:convert';
-import 'dart:io';
+import 'store.dart';
+import 'enums.dart';
 
-const _baseUrl = 'http://ddragon.leagueoflegends.com/cdn';
-const _version = '10.11.1';
-const _region  = 'en_US';
+typedef ChampionFilter = bool Function(Champion champ);
 
-_makeUrl(String document) {
-  return "$_baseUrl/$_version/$document";
+/// Champions factory
+class Champions {
+  Map<String, Champion> list = {};
+
+  /// Get all champions
+  Future<Map<String, Champion>> all() async {
+    if (list.isEmpty) {
+      var store = await globalStore();
+      var data = await store.document('champion').fetch();
+
+      data['data'].forEach((name, data) => list[name] = Champion(data));
+    }
+
+    return list;
+  }
+
+  /// Filter the champion list
+  Future<Iterable<Champion>> filter(ChampionFilter filter) async {
+    final list = await all();
+    return list.values.where(filter);
+  }
+
+  /// Search champions by name
+  Future<Iterable<Champion>> search(String name) {
+    return filter((champ) => champ.name.contains(name));
+  }
+
+  /// Gets list of champions by role
+  Future<Iterable<Champion>> withRole(Role role) {
+    return filter((champ) => champ.roles.contains(role));
+  }
 }
 
 class Champion {
@@ -14,86 +41,24 @@ class Champion {
   final int key;
   final String name;
   final String title;
-  final List<String> tags;
+  final List<Role> roles;
   final ChampionStat stat;
   final _Image icon;
 
-  Champion(Map data):
-      id = data['id'],
-      key = int.parse(data['key']),
-      name = data['name'],
-      title = data['title'],
-      tags = List<String>.from(data['tags']),
-      stat = ChampionStat(data['stats']),
-      icon = _Image(data['image']);
-
-  static Iterable<Champion> collection(Map<String, Map> data) {
-    return data.values.map<Champion>((champ) => Champion(champ));
-  }
-
-  /*
-  static Stream<Champion> list() async* {
-    String fileUrl = _makeUrl('data/$_region/champion.json');
-
-    var file = await DefaultCacheManager().getSingleFile(fileUrl);
-
-    String rawJson = await file.readAsString();
-    var data = jsonDecode(rawJson);
-
-    Iterable list = data['data'].values;
-
-    for(var champ in list) {
-      yield Champion(champ);
-    }
-  }
-   */
+  Champion(Map data)
+      : id = data['id'],
+        key = int.parse(data['key']),
+        name = data['name'],
+        title = data['title'],
+        roles = data['tags'].map<Role>((tag) => Role.fromString(tag)).toList(),
+        stat = ChampionStat(data['stats']),
+        icon = _Image(data['image']);
 }
-
-  /*
-class Champions {
-  final String region;
-  final String jsonUrl;
-
-  Iterable<Champion> champions;
-
-  Champions({String region = _region}):
-      region = region ?? _region,
-      jsonUrl = _makeUrl('data/$region/champion.json') {
-    list();
-  }
-
-  Future<Iterable> list() async {
-    if (champions == null) {
-      await _refresh();
-    }
-
-    return champions;
-  }
-
-  void _refresh() async {
-    champions = null;
-
-    var file = await DefaultCacheManager().getSingleFile(jsonUrl);
-
-    String rawJson = await file.readAsString();
-    var data = jsonDecode(rawJson);
-
-    Iterable list = data['data'].values;
-
-    champions = list.map((item) => Champion(item));
-  }
-}
-   */
-
-
-
-/// The Champion role
-enum Role {assassin, fighter, mage, marksmen, support, tank}
 
 class ChampionStat {
   final Map<String, double> _stat;
-  ChampionStat(Map data):
-    _stat = data.cast<String, double>();
+
+  ChampionStat(Map data) : _stat = data.cast<String, double>();
 }
 
 class _Image {
@@ -104,17 +69,17 @@ class _Image {
   final int _spriteWidth;
 
   String get url {
-    return _makeUrl("img/$_folder/$_fullName");
+    return '';
   }
 
   String get spriteUrl {
-    return _makeUrl("img/sprite/$_spriteName");
+    return '';
   }
 
-  _Image(Map image):
-      _fullName = image['full'],
-      _folder = image['group'],
-      _spriteName = image['sprite'],
-      _spriteX = image['x'],
-      _spriteWidth = image['w'];
+  _Image(Map image)
+      : _fullName = image['full'],
+        _folder = image['group'],
+        _spriteName = image['sprite'],
+        _spriteX = image['x'],
+        _spriteWidth = image['w'];
 }
