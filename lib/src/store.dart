@@ -40,6 +40,11 @@ class Store {
     return Resource(url.document(document), fetch);
   }
 
+  /// Reference for an image file
+  Resource image(String image) {
+    return Resource(url.image(image), fetch);
+  }
+
   /// Region or realm information
   Resource realm(Region region) => Resource(url.realm(region), fetch);
 

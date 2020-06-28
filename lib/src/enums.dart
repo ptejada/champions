@@ -1,6 +1,5 @@
 import 'dart:mirrors';
 import 'package:champions/src/exceptions.dart';
-import 'package:strings/strings.dart';
 
 abstract class _Enum {
   final String code;
@@ -13,7 +12,7 @@ abstract class _Enum {
 }
 
 /// Generates enum from string
-T _enumFromString<T extends _Enum>(String code) {
+T _enumFromString<T extends _Enum>(String code, [T defaultEnum]) {
   var name = Symbol(code);
   var instance = reflectClass(T);
   var member = instance.staticMembers[name];
@@ -22,10 +21,15 @@ T _enumFromString<T extends _Enum>(String code) {
     return instance.getField(name).reflectee;
   }
 
+  if (defaultEnum != null) {
+    return defaultEnum;
+  }
+
   throw EnumException<T>(
       'The ${instance.reflectedType} code $code is not supported.');
 }
 
+/// The champion role
 class Role extends _Enum {
   const Role(String code) : super(code, code);
 
@@ -36,7 +40,31 @@ class Role extends _Enum {
   static const Role support = Role('Support');
   static const Role tank = Role('Tank');
 
-  static Role fromString(String code) => _enumFromString<Role>(code.toLowerCase());
+  static Role fromString(String code) =>
+      _enumFromString<Role>(code.toLowerCase());
+}
+
+/// Champion ability resource
+class AbilityResource extends _Enum {
+  static const AbilityResource mana = AbilityResource('Mana');
+  static const AbilityResource energy = AbilityResource('Energy');
+  static const AbilityResource none = AbilityResource('None');
+  static const AbilityResource unknown = AbilityResource('Unknown');
+  static const AbilityResource rage = AbilityResource('Rage');
+  static const AbilityResource courage = AbilityResource('Courage');
+  static const AbilityResource shield = AbilityResource('Shield');
+  static const AbilityResource fury = AbilityResource('Fury');
+  static const AbilityResource ferocity = AbilityResource('Ferocity');
+  static const AbilityResource heat = AbilityResource('Heat');
+  static const AbilityResource grit = AbilityResource('Grit');
+  static const AbilityResource crimsonRush = AbilityResource('Crimson Rush');
+  static const AbilityResource flow = AbilityResource('Flow');
+  static const AbilityResource bloodWell = AbilityResource('Blood Well');
+
+  const AbilityResource(String code) : super(code, code);
+
+  static AbilityResource fromString(String code) =>
+      _enumFromString<AbilityResource>(code.toLowerCase(), unknown);
 }
 
 /// The content language
