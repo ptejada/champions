@@ -1,3 +1,5 @@
+![Dart CI](https://github.com/ptejada/champions/workflows/Dart%20CI/badge.svg)
+
 A Dart library for the League of Legends static data or Data Dragon database.
 
 ## Usage

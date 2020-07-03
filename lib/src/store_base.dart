@@ -1,22 +1,14 @@
 import 'dart:convert' as convert;
-import 'enums.dart';
 import 'exceptions.dart';
 import 'package:http/http.dart' as http;
-
-Store _globalStore;
-
-Future<Store> globalStore() async {
-  return _globalStore ?? await Store.forRegion(Region.na);
-}
+import 'store_enums.dart';
+import 'utils.dart';
 
 /// Static asset storage
 class Store {
-  final UrlGenerator url;
+  final _UrlGenerator url;
 
-  Store([UrlGenerator generator]) : url = generator ?? UrlGenerator() {
-    // Cache the the last store
-    _globalStore = this;
-  }
+  const Store([this.url = const _UrlGenerator()]);
 
   /// The active language
   Language get language => url.language;
@@ -29,10 +21,10 @@ class Store {
     final store = Store();
 
     var response = await store.realm(region).fetch();
-    var lang = Language.fromString(response['l']);
+    var lang = enumFromString<Language>(Language.values, response['l']);
     String version = response['v'];
 
-    return Store(UrlGenerator(version: version, language: lang));
+    return Store(_UrlGenerator(version: version, language: lang));
   }
 
   /// Reference for a data json file
@@ -65,7 +57,7 @@ class Store {
 }
 
 /// Generates all the Data Dragon Urls
-class UrlGenerator {
+class _UrlGenerator {
   /// The base URL
   final String baseUrl;
 
@@ -75,7 +67,7 @@ class UrlGenerator {
   /// The language for documents
   final Language language;
 
-  const UrlGenerator(
+  const _UrlGenerator(
       {this.baseUrl = 'http://ddragon.leagueoflegends.com',
       this.version = '10.12.1',
       this.language = Language.en_US});
@@ -90,10 +82,10 @@ class UrlGenerator {
 
   /// Generates URL for json or data document
   String document(String document) =>
-      _asset('data/$language/$document', 'json');
+      _asset('data/${language.code}/$document', 'json');
 
   /// Generates URL for realm document
-  String realm(Region region) => _resource('realms/${region}', 'json');
+  String realm(Region region) => _resource('realms/${region.code}', 'json');
 
   String _suffix(String base, [String ext]) {
     if (ext != null) {
@@ -108,7 +100,7 @@ class UrlGenerator {
   String versions() => _resource('api/versions.json');
 }
 
-/// A network resource
+/// Represents a network resource
 class Resource {
   final String url;
   final Function _resolver;
@@ -116,7 +108,11 @@ class Resource {
   /// Resource type or file extension
   String get type => url.split('.').last;
 
-  Resource(this.url, this._resolver);
+  /// Creates storage resource reference
+  ///
+  /// The [resolver] function is used to fetch the resource. If not provided
+  /// calling [fetch] will return the URL.
+  Resource(this.url, Function resolver) : _resolver = resolver ?? (() => url);
 
   /// Downloads the resource from network
   Future fetch() async => _resolver(this);

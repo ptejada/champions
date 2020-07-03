@@ -26,7 +26,7 @@ void main() {
       var champ = await champions.champion('Veigar');
 
       expect(await champ.icon.url, endsWith('img/champion/Veigar.png'));
-      expect(await champ.icon.spriteUrl, endsWith('img/sprite/champion4.png'));
+      expect(await champ.icon.sprite.url, endsWith('img/sprite/champion4.png'));
     });
 
     test('Champion stat generator', () async {

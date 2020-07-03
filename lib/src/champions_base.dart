@@ -1,23 +1,37 @@
-import 'store.dart';
+import 'package:champions/storage.dart';
+
 import 'enums.dart';
+import 'utils.dart';
 
 /// Callback to filter the champion list
 typedef ChampionFilter = bool Function(Champion champ);
 
-/// Champions factory
+/// The Champion factory class
 class Champions {
-  Map<String, Champion> list = {};
+  final Map<String, Champion> _list = <String, Champion>{};
+  final Store _store;
+
+  /// Creates champion factory with an specific store
+  Champions([this._store = const Store()]);
+
+  /// Creates champions class with the latest patch and default language for a
+  /// region
+  static Future<Champions> forRegion([Region region = Region.na]) async {
+    final store = await Store.forRegion(region);
+
+    return Champions(store);
+  }
 
   /// Get all champions
   Future<Map<String, Champion>> get all async {
-    if (list.isEmpty) {
-      var store = await globalStore();
-      var data = await store.document('champion').fetch();
+    if (_list.isEmpty) {
+      var data = await _store.document('champion').fetch();
 
-      data['data'].forEach((name, data) => list[name] = Champion(data));
+      data['data']
+          .forEach((name, data) => _list[name] = Champion(data, _store));
     }
 
-    return list;
+    return _list;
   }
 
   /// Filter the champion list
@@ -46,7 +60,10 @@ class Champions {
   }
 }
 
-/// The champion class
+/// A champion reference.
+///
+/// To create an instance for an specific champion use the factory
+/// [Champions.champion]
 class Champion {
   final String id;
   final int key;
@@ -59,41 +76,54 @@ class Champion {
   final ChampionStats stat;
   final _Image icon;
 
-  Champion(Map data)
+  Champion(Map data, Store store)
       : id = data['id'],
         key = int.parse(data['key']),
         name = data['name'],
         title = data['title'],
         blurb = data['blurb'],
         difficulty = data['info']['difficulty'],
-        resource = AbilityResource.fromString(data['partype']),
-        roles = data['tags'].map<Role>((tag) => Role.fromString(tag)).toList(),
+        resource = enumFromString<AbilityResource>(
+            AbilityResource.values, data['partype']),
+        roles = data['tags']
+            .map<Role>((tag) => enumFromString(Role.values, tag))
+            .toList(),
         stat = ChampionStats(data['stats']),
-        icon = _Image(data['image']);
+        icon = _Image(data['image'], store);
 }
 
 /// Base champion stats
 class _Stats {
   /// Health points
   final num hp;
+
   /// Health points regeneration
   final num hpRegen;
+
   /// Mana points
   final num mana;
+
   /// Mana points regeneration
   final num manaRegen;
+
   /// Movement speed
   final num movementSpeed;
+
   /// Magic resist
   final num magicResist;
+
   /// Armor
   final num armor;
+
   /// Critical hit chance
   final num crit;
+
   /// Basic attack damage
   final num attackDamage;
+
   /// Basic attack range
   final num attackRange;
+
   /// Basic attack speed
   final num attackSpeed;
 
@@ -111,7 +141,7 @@ class _Stats {
       this.attackSpeed});
 }
 
-/// Champion stats
+/// The champion stats
 class ChampionStats implements _Stats {
   final Map<String, num> _stat;
 
@@ -179,31 +209,38 @@ class ChampionStats implements _Stats {
   }
 }
 
+/// A reference to an image
 class _Image {
   final String _fullName;
   final String _folder;
-  final String _spriteName;
-  final int spriteX;
-  final int spriteY;
-  final int spriteWidth;
-  final int spriteHeight;
 
-  Future<String> get url async {
-    var store = await globalStore();
-    return store.image('$_folder/$_fullName').url;
+  final _ImageSprite sprite;
+
+  final Store _store;
+
+  /// The image URL
+  String get url {
+    return _store.image('$_folder/$_fullName').url;
   }
 
-  Future<String> get spriteUrl async {
-    var store = await globalStore();
-    return store.image('sprite/$_spriteName').url;
-  }
-
-  _Image(Map image)
+  _Image(Map image, this._store)
       : _fullName = image['full'],
         _folder = image['group'],
-        _spriteName = image['sprite'],
-        spriteX = image['x'],
-        spriteY = image['y'],
-        spriteWidth = image['w'],
-        spriteHeight = image['h'];
+        sprite = _ImageSprite(_store.image('sprite/${image['sprite']}').url,
+            x: image['x'],
+            y: image['y'],
+            width: image['w'],
+            height: image['h']);
+}
+
+/// A reference for an image in a sprite
+class _ImageSprite {
+  final int x;
+  final int y;
+  final int width;
+  final int height;
+  final String url;
+
+  const _ImageSprite(this.url,
+      {this.x = 0, this.y = 0, this.height, this.width});
 }

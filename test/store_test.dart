@@ -1,6 +1,7 @@
 import 'package:champions/src/exceptions.dart';
-import 'package:champions/src/enums.dart';
-import 'package:champions/src/store.dart';
+import 'package:champions/src/store_base.dart';
+import 'package:champions/src/utils.dart';
+import 'package:champions/storage.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -45,9 +46,10 @@ void main() {
   });
 
   test('Language builder', () {
-    expect(Language.fromString('en_US'), equals(Language.en_US));
+
+    expect(enumFromString(Language.values, 'en_US'), equals(Language.en_US));
     expect(
-        () => Language.fromString('en'),
+        () => enumFromString(Language.values, 'en'),
         throwsA(allOf([
           isA<EnumException<Language>>(),
           predicate<EnumException>(
