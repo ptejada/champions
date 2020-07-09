@@ -16,7 +16,7 @@ void main() async {
 
   // Or only list of champions filtered by custom criteria
   // For example filter the list by champions with at least 600 base HP
-  list = await champions.filter((champ) => champ.stat.hp >= 600);
+  list = await champions.filter((champ) => champ.stats.hp >= 600);
 
   // Print the name and title for each champion in the list
   list.forEach((Champion champ) {

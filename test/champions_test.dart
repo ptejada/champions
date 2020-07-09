@@ -32,20 +32,20 @@ void main() {
     test('Champion stat generator', () async {
       var champ = await champions.champion('Ahri');
       expect(champ, isA<Champion>());
-      expect(champ.stat.mana.round(), 418);
-      expect(champ.stat.hp, greaterThanOrEqualTo(0));
-      expect(champ.stat.hpRegen, greaterThanOrEqualTo(0));
-      expect(champ.stat.mana, greaterThanOrEqualTo(0));
-      expect(champ.stat.manaRegen, greaterThanOrEqualTo(0));
-      expect(champ.stat.movementSpeed, greaterThanOrEqualTo(0));
-      expect(champ.stat.magicResist, greaterThanOrEqualTo(0));
-      expect(champ.stat.armor, greaterThanOrEqualTo(0));
-      expect(champ.stat.crit, greaterThanOrEqualTo(0));
-      expect(champ.stat.attackDamage, greaterThanOrEqualTo(0));
-      expect(champ.stat.attackRange, greaterThanOrEqualTo(0));
-      expect(champ.stat.attackSpeed, greaterThanOrEqualTo(0));
+      expect(champ.stats.mana.round(), 418);
+      expect(champ.stats.hp, greaterThanOrEqualTo(0));
+      expect(champ.stats.hpRegen, greaterThanOrEqualTo(0));
+      expect(champ.stats.mana, greaterThanOrEqualTo(0));
+      expect(champ.stats.manaRegen, greaterThanOrEqualTo(0));
+      expect(champ.stats.movementSpeed, greaterThanOrEqualTo(0));
+      expect(champ.stats.magicResist, greaterThanOrEqualTo(0));
+      expect(champ.stats.armor, greaterThanOrEqualTo(0));
+      expect(champ.stats.crit, greaterThanOrEqualTo(0));
+      expect(champ.stats.attackDamage, greaterThanOrEqualTo(0));
+      expect(champ.stats.attackRange, greaterThanOrEqualTo(0));
+      expect(champ.stats.attackSpeed, greaterThanOrEqualTo(0));
 
-      var statsAtLevel = champ.stat.atLevel(5);
+      var statsAtLevel = champ.stats.atLevel(5);
 
       expect(statsAtLevel.hp, equals(986));
       expect(statsAtLevel.hpRegen, equals(9.5));

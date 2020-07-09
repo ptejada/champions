@@ -1,29 +1,28 @@
 import 'package:champions/storage.dart';
 
 import 'enums.dart';
+import 'champion_api.dart' as api;
+import 'asset_api.dart' as api;
 import 'utils.dart';
-
-/// Callback to filter the champion list
-typedef ChampionFilter = bool Function(Champion champ);
 
 /// The Champion factory class
 class Champions {
-  final Map<String, Champion> _list = <String, Champion>{};
+  final Map<String, api.Champion> _list = <String, Champion>{};
   final Store _store;
 
   /// Creates champion factory with an specific store
   Champions([this._store = const Store()]);
 
-  /// Creates champions class with the latest patch and default language for a
-  /// region
+  /// Creates [Champions] class with the latest patch and default language for a
+  /// [Region]
   static Future<Champions> forRegion([Region region = Region.na]) async {
     final store = await Store.forRegion(region);
 
     return Champions(store);
   }
 
-  /// Get all champions
-  Future<Map<String, Champion>> get all async {
+  /// A lis of all champions index by code name
+  Future<Map<String, api.Champion>> get all async {
     if (_list.isEmpty) {
       var data = await _store.document('champion').fetch();
 
@@ -35,22 +34,22 @@ class Champions {
   }
 
   /// Filter the champion list
-  Future<Iterable<Champion>> filter(ChampionFilter filter) async {
+  Future<Iterable<api.Champion>> filter(api.ChampionFilter filter) async {
     return all.then((list) => list.values.where(filter));
   }
 
   /// Search champions by name
-  Future<Iterable<Champion>> search(String name) {
+  Future<Iterable<api.Champion>> search(String name) {
     return filter((champ) => champ.name.contains(name));
   }
 
   /// Gets list of champions by role
-  Future<Iterable<Champion>> withRole(Role role) {
+  Future<Iterable<api.Champion>> withRole(Role role) {
     return filter((champ) => champ.roles.contains(role));
   }
 
   /// Get a champion by id
-  Future<Champion> champion(String id) async {
+  Future<api.Champion> champion(String id) async {
     final list = await all;
     if (list.containsKey(id)) {
       return list[id];
@@ -60,21 +59,56 @@ class Champions {
   }
 }
 
-/// A champion reference.
-///
-/// To create an instance for an specific champion use the factory
-/// [Champions.champion]
-class Champion {
+class Champion implements api.Champion {
+  @override
   final String id;
+  @override
   final int key;
+  @override
   final String name;
+  @override
   final String title;
+  @override
   final String blurb;
+  @override
   final int difficulty;
+  @override
   final AbilityResource resource;
+  @override
   final List<Role> roles;
-  final ChampionStats stat;
-  final _Image icon;
+  @override
+  final api.ChampionStats stats;
+  @override
+  final ImageIcon icon;
+
+  final ExtraChampionInfo _extra;
+
+  @override
+  Future<String> get lore => _extra.get('lore');
+
+  @override
+  Future<String> get allyTips => _extra.get('allytips');
+
+  @override
+  Future<String> get enemyTips => _extra.get('enemytips');
+
+  @override
+  Future<Iterable<ChampionSkin>> get skins async {
+    var skins = await _extra.get('skins');
+
+    if (skins is Iterable) {
+      return skins.map((skin) => ChampionSkin(
+            champId: id,
+            id: skin['id'],
+            name: skin['name'],
+            hasChroma: skin['chromas'],
+            num: skin['num'],
+            store: _extra.store,
+          ));
+    }
+
+    return <ChampionSkin>[];
+  }
 
   Champion(Map data, Store store)
       : id = data['id'],
@@ -88,159 +122,140 @@ class Champion {
         roles = data['tags']
             .map<Role>((tag) => enumFromString(Role.values, tag))
             .toList(),
-        stat = ChampionStats(data['stats']),
-        icon = _Image(data['image'], store);
+        stats = ChampionStats(data['stats']),
+        icon = ImageIcon(data['image'], store),
+        _extra = ExtraChampionInfo(data['id'], store);
+}
+
+class ChampionSkin implements api.ChampionSkin {
+  @override
+  final String id;
+  @override
+  final String name;
+  @override
+  final bool hasChroma;
+  @override
+  final int num;
+  final Store store;
+  final String _champId;
+
+  @override
+  Image get full => Image(store.image('champion/splash/$_champId', 'jpg'));
+
+  @override
+  Image get compact => Image(store.image('champion/loading/$_champId', 'jpg'));
+
+  ChampionSkin(
+      {this.id, this.name, this.hasChroma, this.num, this.store, champId})
+      : _champId = champId;
+}
+
+class ExtraChampionInfo {
+  final String _id;
+
+  final Store store;
+
+  Map _data;
+
+  ExtraChampionInfo(this._id, this.store);
+
+  Future get(String propName) async {
+    if (_data == null) {
+      await store
+          .document('champion/$_id')
+          .fetch()
+          .then((data) => _data = data['data'][_id]);
+    }
+
+    return _data[propName];
+  }
 }
 
 /// Base champion stats
-class _Stats {
-  /// Health points
-  final num hp;
+class LevelStats implements api.LevelStats {
+  final Map _stat;
+  final num level;
 
-  /// Health points regeneration
-  final num hpRegen;
+  LevelStats(this._stat, [level = 0]): level = level > 1 ? level : 0;
 
-  /// Mana points
-  final num mana;
-
-  /// Mana points regeneration
-  final num manaRegen;
-
-  /// Movement speed
-  final num movementSpeed;
-
-  /// Magic resist
-  final num magicResist;
-
-  /// Armor
-  final num armor;
-
-  /// Critical hit chance
-  final num crit;
-
-  /// Basic attack damage
-  final num attackDamage;
-
-  /// Basic attack range
-  final num attackRange;
-
-  /// Basic attack speed
-  final num attackSpeed;
-
-  _Stats(
-      {this.hp,
-      this.hpRegen,
-      this.mana,
-      this.manaRegen,
-      this.movementSpeed,
-      this.magicResist,
-      this.armor,
-      this.crit,
-      this.attackDamage,
-      this.attackRange,
-      this.attackSpeed});
-}
-
-/// The champion stats
-class ChampionStats implements _Stats {
-  final Map<String, num> _stat;
-
-  /// Health points
   @override
-  num get hp => _stat['hp'];
+  num get hp => _stat['hp'] + (level * _stat['hpperlevel']);
 
-  /// Health points regeneration
   @override
-  num get hpRegen => _stat['hpregen'];
+  num get hpRegen => _stat['hpregen'] + (level * _stat['hpregenperlevel']);
 
-  /// Mana Points
   @override
-  num get mana => _stat['mp'];
+  num get mana => _stat['mp'] + (level * _stat['mpperlevel']);
 
-  /// Mana points regeneration
   @override
-  num get manaRegen => _stat['mpregen'];
+  num get manaRegen => _stat['mpregen'] + (level * _stat['mpregenperlevel']);
 
-  /// Movement speed
   @override
   num get movementSpeed => _stat['movespeed'];
 
-  /// Magic resist
   @override
-  num get magicResist => _stat['spellblock'];
+  num get magicResist =>
+      _stat['spellblock'] + (level * _stat['spellblockperlevel']);
 
-  /// Armor
   @override
-  num get armor => _stat['armor'];
+  num get armor => _stat['armor'] + (level * _stat['armorperlevel']);
 
-  /// Critical hit chance percent
   @override
-  num get crit => _stat['crit'];
+  num get crit => _stat['crit'] + (level * _stat['critperlevel']);
 
-  /// Basic attack damage
   @override
-  num get attackDamage => _stat['attackdamage'];
+  num get attackDamage =>
+      _stat['attackdamage'] + (level * _stat['attackdamageperlevel']);
 
-  /// Basic attack range
   @override
   num get attackRange => _stat['attackrange'];
 
-  /// Basic attack speed
   @override
-  num get attackSpeed => _stat['attackspeed'];
+  num get attackSpeed =>
+      _stat['attackspeed'] + (level * _stat['attackspeedperlevel']);
+}
 
-  ChampionStats(Map data) : _stat = data.cast<String, num>();
+/// The champion stats
+class ChampionStats extends LevelStats implements api.ChampionStats {
+  ChampionStats(Map data) : super(data.cast<String, num>());
 
   /// Generates champion stats at the specified level
-  _Stats atLevel(int level) {
-    return _Stats(
-      hp: hp + (level * _stat['hpperlevel']),
-      hpRegen: hpRegen + (level * _stat['hpregenperlevel']),
-      mana: mana + (level * _stat['mpperlevel']),
-      manaRegen: manaRegen + (level * _stat['mpregenperlevel']),
-      movementSpeed: movementSpeed,
-      magicResist: magicResist + (level * _stat['spellblockperlevel']),
-      armor: armor + (level * _stat['armorperlevel']),
-      crit: crit + (level * _stat['critperlevel']),
-      attackDamage: attackDamage + (level * _stat['attackdamageperlevel']),
-      attackRange: attackRange,
-      attackSpeed: attackSpeed + (level * _stat['attackspeedperlevel']),
-    );
-  }
+  api.LevelStats atLevel(int level) => LevelStats(_stat, level);
+}
+
+class Image implements api.Image {
+  @override
+  final String url;
+
+  Image(Resource img) : url = img.url;
 }
 
 /// A reference to an image
-class _Image {
-  final String _fullName;
-  final String _folder;
+class ImageIcon extends Image implements api.ImageIcon {
+  final ImageSprite sprite;
 
-  final _ImageSprite sprite;
-
-  final Store _store;
-
-  /// The image URL
-  String get url {
-    return _store.image('$_folder/$_fullName').url;
-  }
-
-  _Image(Map image, this._store)
-      : _fullName = image['full'],
-        _folder = image['group'],
-        sprite = _ImageSprite(_store.image('sprite/${image['sprite']}').url,
+  ImageIcon(Map image, Store _store)
+      : sprite = ImageSprite(_store.image('sprite/${image['sprite']}'),
             x: image['x'],
             y: image['y'],
             width: image['w'],
-            height: image['h']);
+            height: image['h']),
+        super(_store.image("${image['group']}/${image['full']}"));
 }
 
 /// A reference for an image in a sprite
-class _ImageSprite {
+class ImageSprite implements api.ImageSprite {
+  @override
   final int x;
+  @override
   final int y;
+  @override
   final int width;
+  @override
   final int height;
+  @override
   final String url;
 
-  const _ImageSprite(this.url,
-      {this.x = 0, this.y = 0, this.height, this.width});
+  ImageSprite(Resource img, {this.x = 0, this.y = 0, this.height, this.width})
+      : url = img.url;
 }

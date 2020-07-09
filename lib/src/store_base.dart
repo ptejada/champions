@@ -33,8 +33,8 @@ class Store {
   }
 
   /// Reference for an image file
-  Resource image(String image) {
-    return Resource(url.image(image), fetch);
+  Resource image(String image, [String type = 'png']) {
+    return Resource(url.image(image, type), fetch);
   }
 
   /// Region or realm information
@@ -78,7 +78,8 @@ class _UrlGenerator {
       _resource('cdn/$version/$asset', ext);
 
   /// Generates URL for an image
-  String image(String image) => _asset('img/$image', 'png');
+  String image(String image, [String type = 'png']) =>
+      _asset('img/$image', type);
 
   /// Generates URL for json or data document
   String document(String document) =>
