@@ -1,5 +1,6 @@
 import 'package:champions/storage.dart';
 
+import 'champion_spells.dart';
 import 'enums.dart';
 import 'champion_api.dart' as api;
 import 'asset_api.dart' as api;
@@ -125,6 +126,18 @@ class Champion implements api.Champion {
         stats = ChampionStats(data['stats']),
         icon = ImageIcon(data['image'], store),
         _extra = ExtraChampionInfo(data['id'], store);
+
+  @override
+  Future<api.ChampionPassive> get passive async =>
+      Passive(await _extra.get('passive'), _extra.store);
+
+  @override
+  // TODO: implement spells
+  Future<Iterable<api.ChampionSpell>> get spells async {
+    var list = await _extra.get<Iterable>('spells');
+
+    return list.map((data) => Spell(data, _extra.store)).toList();
+  }
 }
 
 class ChampionSkin implements api.ChampionSkin {
@@ -159,7 +172,7 @@ class ExtraChampionInfo {
 
   ExtraChampionInfo(this._id, this.store);
 
-  Future get(String propName) async {
+  Future<T> get<T>(String propName) async {
     if (_data == null) {
       await store
           .document('champion/$_id')
@@ -176,7 +189,7 @@ class LevelStats implements api.LevelStats {
   final Map _stat;
   final num level;
 
-  LevelStats(this._stat, [level = 0]): level = level > 1 ? level : 0;
+  LevelStats(this._stat, [level = 0]) : level = level > 1 ? level : 0;
 
   @override
   num get hp => _stat['hp'] + (level * _stat['hpperlevel']);

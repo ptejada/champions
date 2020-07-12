@@ -1,3 +1,6 @@
+## 0.1.1
+- Added champion spells collection
+- Added champion passive information
 ## 0.1.0
 - Abstract the public facing API to interfaces to is easier to keep track the public api changes
 - Added partial support for extra champion information like skins, lore and tips 

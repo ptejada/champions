@@ -56,6 +56,18 @@ void main() {
       expect(statsAtLevel.attackDamage.round(), equals(68));
       expect(statsAtLevel.attackSpeed, equals(10.668));
     });
+
+    test('Champion spells', () async {
+        var champ = await champions.champion('Ahri');
+        var spells = await champ.spells;
+        var spell = spells.first;
+
+        expect(spell.name, equals('Orb of Deception'));
+        expect(spell.description, contains('sends out and pulls back her orb'));
+        expect(spell.cost.spread, contains('/'));
+        expect(spell.cooldown.amount, greaterThan(5));
+        expect(spell.icon.url, endsWith('.png'));
+    });
   });
 
   group('Champions filter', () {

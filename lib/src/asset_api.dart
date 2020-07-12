@@ -12,7 +12,7 @@ abstract class ImageIcon extends Image {
   /// The image sprite reference
   final ImageSprite sprite;
 
-  ImageIcon._(this.sprite, String url): super._(url);
+  ImageIcon._(this.sprite, String url) : super._(url);
 }
 
 /// A reference for an image in a sprite

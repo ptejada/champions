@@ -51,6 +51,12 @@ abstract class Champion {
   /// A list of all the champion skins
   final Future<Iterable<ChampionSkin>> skins;
 
+  /// A list of all champion spells
+  final Future<Iterable<ChampionSpell>> spells;
+
+  /// Tha champion passive
+  final Future<ChampionPassive> passive;
+
   Champion._(
       this.id,
       this.key,
@@ -65,7 +71,9 @@ abstract class Champion {
       this.lore,
       this.allyTips,
       this.enemyTips,
-      this.skins);
+      this.skins,
+      this.spells,
+      this.passive);
 }
 
 /// A champion skin
@@ -151,4 +159,112 @@ abstract class ChampionStats extends LevelStats {
 
   /// Generates champion stats at the specified level
   LevelStats atLevel(int level);
+}
+
+abstract class ChampionPassive {
+  /// The passive display name
+  final String name;
+
+  /// The passive description
+  final String description;
+
+  /// The passive icon image
+  final ImageIcon icon;
+
+  ChampionPassive._(this.name, this.description, this.icon);
+}
+
+abstract class ChampionSpell {
+  /// The unique champion spell id
+  final String id;
+
+  /// The spell display name
+  final String name;
+
+  /// The spell description
+  final String description;
+
+  /// The spell description with specific stats
+  final String tooltip;
+
+  /// The spell cooldown
+  final SpellCooldown cooldown;
+
+  /// The spell cost
+  final SpellCost cost;
+
+  /// The spell range and in units
+  final SpellRange range;
+
+  /// The maximum rank the spell can be level up
+  final int maxRank;
+
+  /// The ability icon
+  final ImageIcon icon;
+
+  // TODO: Add the spell ability video
+  // Example URL where 0266 is the champion key left padded with 0 up to 4
+  // characters and E is the spell keyboard key which is the last letter in
+  // the spell id
+  // https://d28xe8vt774jo5.cloudfront.net/champion-abilities/0266/ability_0266_E1.webm
+
+  ChampionSpell._(this.id, this.name, this.description, this.tooltip,
+      this.cooldown, this.cost, this.range, this.maxRank, this.icon);
+}
+
+abstract class SpellCooldown {
+  /// The level of the cooldown
+  final int amount;
+
+  /// All the cooldown spread by rank in single string
+  ///
+  /// Ex: 10/8/6/4
+  /// Means 10 seconds at rank 1, 8 seconds at rank 2 and so on
+  final String spread;
+
+  SpellCooldown._(this.amount, this.spread);
+
+  /// The cooldown at an specific rank
+  int atRank(int rank);
+
+  @override
+  String toString();
+}
+
+abstract class SpellCost {
+  /// The level of the cooldown
+  final int amount;
+
+  /// All the resource cost spread by rank in a single string
+  ///
+  /// Ex: 60/80/90
+  /// Means it costs 60 resource points at rank 1, 80 points at rank 2 and so on
+  final String spread;
+
+  SpellCost._(this.amount, this.spread);
+
+  /// The cooldown at an specific rank
+  int atRank(int rank);
+
+  @override
+  String toString();
+}
+
+abstract class SpellRange {
+  /// The spell range
+  final int amount;
+
+  /// All the spell rage spread by rank in a single string
+  ///
+  /// Ex: 100/150/200
+  /// Means the range is 100 units at rank 1, 150 units at rank 2 and so on
+  final String spread;
+
+  SpellRange._(this.amount, this.spread);
+
+  /// The range at an specific rank
+  int atRank(int rank);
+
+  @override
+  String toString();
 }

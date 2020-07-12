@@ -34,8 +34,8 @@ void main() {
 ## Roadmap
 This library is still under development below are the items that still need to be implemented:
 
-1. List of champion spells, and their corresponding assets like images and videos.
-2. Information about champion passive including icon.
+1. ~~List of champion spells, and their corresponding assets like images.~~
+2. ~~Information about champion passive including icon.~~
 3. ~~Add the extended version of the lore.~~
 4. ~~Include tips for allies and enemies.~~
 5. ~~Add champion skins.~~
