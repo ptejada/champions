@@ -2,7 +2,7 @@ name: champions
 description: >-
   A Dart library for the League of Legends (LoL) static data or Data Dragon database
 
-version: 0.1.2
+version: 0.2.0
 homepage: https://github.com/ptejada/champions
 
 environment:
