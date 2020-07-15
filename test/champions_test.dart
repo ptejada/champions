@@ -1,5 +1,4 @@
-import 'package:champions/src/champions_base.dart';
-import 'package:champions/src/enums.dart';
+import 'package:champions/champions.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -57,6 +56,20 @@ void main() {
       expect(statsAtLevel.attackSpeed, equals(10.668));
     });
 
+    test('Loading all champion lazy assets', () async {
+      var all = await champions.all;
+
+      for (var champion in all.values) {
+        print('Loading lazy assets for ${champion.name}');
+        expect(await champion.lore, isA<String>());
+        expect(await champion.allyTips, isA<Iterable<String>>());
+        expect(await champion.enemyTips, isA<Iterable<String>>());
+        expect(await champion.skins, isA<Iterable<ChampionSkin>>());
+        expect(await champion.spells, isA<Iterable<ChampionSpell>>());
+        expect(await champion.passive, isA<ChampionPassive>());
+      }
+    }, timeout: Timeout(Duration(minutes: 5)));
+
     test('Champion spells', () async {
         var champ = await champions.champion('Ahri');
         var spells = await champ.spells;
@@ -67,6 +80,21 @@ void main() {
         expect(spell.cost.spread, contains('/'));
         expect(spell.cooldown.amount, greaterThan(5));
         expect(spell.icon.url, endsWith('.png'));
+        expect(spell.clip.url, endsWith('.webm'));
+        expect(spell.clip.thumbnail.url, endsWith('.jpg'));
+    });
+
+    test('Champion skins', () async {
+      var champ = await champions.champion('Ahri');
+      var skins = await champ.skins;
+      var skin = skins.first;
+
+      expect(skins.length, greaterThan(5));
+      expect(skin.name, equals('default'));
+      expect(skin.full.url, endsWith('.jpg'));
+      expect(skin.compact.url, endsWith('.jpg'));
+      expect(skin.id, hasLength(6));
+      expect(skin.hasChroma, isFalse);
     });
   });
 

@@ -35,3 +35,14 @@ abstract class ImageSprite {
   const ImageSprite._(this.url,
       {this.x = 0, this.y = 0, this.height, this.width});
 }
+
+/// A video clip reference
+abstract class VideoClip {
+  /// The video clip Url
+  final String url;
+
+  /// The video thumbnail
+  final Image thumbnail;
+
+  VideoClip._(this.url, this.thumbnail);
+}

@@ -3,8 +3,8 @@
 library champions;
 
 export 'src/champions_base.dart' show Champions;
-export 'src/champion_api.dart';
-export 'src/asset_api.dart';
+export 'src/api_champion.dart';
+export 'src/api_assets.dart';
 export 'src/exceptions.dart';
 export 'src/enums.dart';
 export 'src/store_enums.dart' show Region;

@@ -2,8 +2,8 @@ import 'package:champions/storage.dart';
 
 import 'champion_spells.dart';
 import 'enums.dart';
-import 'champion_api.dart' as api;
-import 'asset_api.dart' as api;
+import 'api_champion.dart' as api;
+import 'api_assets.dart' as api;
 import 'utils.dart';
 
 /// The Champion factory class
@@ -85,16 +85,34 @@ class Champion implements api.Champion {
   final ExtraChampionInfo _extra;
 
   @override
-  Future<String> get lore => _extra.get('lore');
+  Future<String> get lore => _extra.get<String>('lore');
 
   @override
-  Future<String> get allyTips => _extra.get('allytips');
+  Future<Iterable<String>> get allyTips async {
+    var rawTips = await _extra.get<Iterable>('allytips');
+    var tips = <String>[];
+
+    for (var tip in rawTips) {
+      tips.add(tip);
+    }
+
+    return tips;
+  }
 
   @override
-  Future<String> get enemyTips => _extra.get('enemytips');
+  Future<Iterable<String>> get enemyTips async {
+    var rawTips = await _extra.get<Iterable>('enemytips');
+    var tips = <String>[];
+
+    for (var tip in rawTips) {
+      tips.add(tip);
+    }
+
+    return tips;
+  }
 
   @override
-  Future<Iterable<ChampionSkin>> get skins async {
+  Future<Iterable<api.ChampionSkin>> get skins async {
     var skins = await _extra.get('skins');
 
     if (skins is Iterable) {
@@ -135,8 +153,11 @@ class Champion implements api.Champion {
   // TODO: implement spells
   Future<Iterable<api.ChampionSpell>> get spells async {
     var list = await _extra.get<Iterable>('spells');
+    var spellKey = ['Q', 'W', 'E', 'R'];
 
-    return list.map((data) => Spell(data, _extra.store)).toList();
+    return list
+        .map((data) => Spell(data, spellKey.removeAt(0), key, _extra.store))
+        .toList();
   }
 }
 
@@ -233,6 +254,7 @@ class ChampionStats extends LevelStats implements api.ChampionStats {
   ChampionStats(Map data) : super(data.cast<String, num>());
 
   /// Generates champion stats at the specified level
+  @override
   api.LevelStats atLevel(int level) => LevelStats(_stat, level);
 }
 
@@ -245,6 +267,7 @@ class Image implements api.Image {
 
 /// A reference to an image
 class ImageIcon extends Image implements api.ImageIcon {
+  @override
   final ImageSprite sprite;
 
   ImageIcon(Map image, Store _store)

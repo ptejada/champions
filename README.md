@@ -1,6 +1,8 @@
 ![Dart CI](https://github.com/ptejada/champions/workflows/Dart%20CI/badge.svg)
 
-A Dart library for the League of Legends static data or Data Dragon database.
+A Dart library for the League of Legends (LoL) static data or Data Dragon database.
+All the original Data Dragon documentation and sources are available at the Riot Developer console 
+https://developer.riotgames.com/docs/lol.
 
 ## Usage
 
@@ -39,8 +41,8 @@ This library is still under development below are the items that still need to b
 3. ~~Add the extended version of the lore.~~
 4. ~~Include tips for allies and enemies.~~
 5. ~~Add champion skins.~~
-6. Add champion splash arts assets.
-7. Add loading screen assets.
+6. ~~Add champion splash arts assets.~~
+7. ~~Add loading screen assets.~~
 8. Add items library.
 9. Add library for summoner spells.
 

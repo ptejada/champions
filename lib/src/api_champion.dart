@@ -1,5 +1,5 @@
 import 'enums.dart';
-import 'asset_api.dart';
+import 'api_assets.dart';
 
 /// Callback to filter the champion list
 typedef ChampionFilter = bool Function(Champion champ);
@@ -43,10 +43,10 @@ abstract class Champion {
   final Future<String> lore;
 
   /// Tips for allies
-  final Future<String> allyTips;
+  final Future<Iterable<String>> allyTips;
 
   /// Tips for enemies
-  final Future<String> enemyTips;
+  final Future<Iterable<String>> enemyTips;
 
   /// A list of all the champion skins
   final Future<Iterable<ChampionSkin>> skins;
@@ -202,14 +202,14 @@ abstract class ChampionSpell {
   /// The ability icon
   final ImageIcon icon;
 
-  // TODO: Add the spell ability video
-  // Example URL where 0266 is the champion key left padded with 0 up to 4
-  // characters and E is the spell keyboard key which is the last letter in
-  // the spell id
-  // https://d28xe8vt774jo5.cloudfront.net/champion-abilities/0266/ability_0266_E1.webm
+  /// The ability video clip
+  final VideoClip clip;
+
+  /// The spell key
+  final String key;
 
   ChampionSpell._(this.id, this.name, this.description, this.tooltip,
-      this.cooldown, this.cost, this.range, this.maxRank, this.icon);
+      this.cooldown, this.cost, this.range, this.maxRank, this.icon, this.clip, this.key);
 }
 
 abstract class SpellCooldown {
