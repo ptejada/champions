@@ -2,7 +2,7 @@
 
 A Dart library for the League of Legends (LoL) static data or Data Dragon database.
 All the original Data Dragon documentation and sources are available at the Riot Developer console 
-https://developer.riotgames.com/docs/lol.
+<https://developer.riotgames.com/docs/lol>.
 
 ## Usage
 
@@ -36,15 +36,10 @@ void main() {
 ## Roadmap
 This library is still under development below are the items that still need to be implemented:
 
-1. ~~List of champion spells, and their corresponding assets like images.~~
-2. ~~Information about champion passive including icon.~~
-3. ~~Add the extended version of the lore.~~
-4. ~~Include tips for allies and enemies.~~
-5. ~~Add champion skins.~~
-6. ~~Add champion splash arts assets.~~
-7. ~~Add loading screen assets.~~
-8. Add items library.
-9. Add library for summoner spells.
+1. ~~Add items library.~~
+2. Add recommended item collections to champions.
+3. Add library for summoner spells.
+4. Add caching layer for all assets.
 
 ## Features and bugs
 
